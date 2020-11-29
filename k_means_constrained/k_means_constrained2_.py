@@ -172,7 +172,7 @@ def k_means_constrained(X,W, n_clusters, size_min=None, size_max=None, init='k-m
         # of the best results (as opposed to one set per run per thread).
         for it in range(n_init):
             # run a k-means once
-            labels, inertia, centers, n_iter_ = 
+            labels, inertia, centers, n_iter_ = kmeans_constrained_single
             (
                 X,W, n_clusters,
                 size_min=size_min, size_max=size_max,
