@@ -9,7 +9,7 @@
 # License: BSD 3 clause
 
 import numpy as np
-cimport sparse as sp
+import sparse as sp
 cimport numpy as np
 cimport cython
 from cython cimport floating
