@@ -35,9 +35,9 @@ def permute_matrix(vector):
     permut = sp.csr_matrix((ones, vector, indptr))
     return permut.toarray()
 
-def _centers_dense(np.ndarray[floating, ndim=2] X,
+def _centers_dense(np.ndarray[floating, ndim=2] X,W,
         np.ndarray[INT, ndim=1] labels, int n_clusters,
-        np.ndarray[floating, ndim=1] distances,Y ):
+        np.ndarray[floating, ndim=1] distances ):
     """M step of the K-means EM algorithm
 
     Computation of cluster centers / means.

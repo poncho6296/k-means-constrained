@@ -28,10 +28,10 @@ from k_means_constrained.sklearn_import.cluster.k_means_ import _validate_center
 from k_means_constrained.mincostflow_vectorized import SimpleMinCostFlowVectorized
 
 
-def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-means++',
+def k_means_constrained(X,W, n_clusters, size_min=None, size_max=None, init='k-means++',
             n_init=10, max_iter=300, verbose=False,
             tol=1e-4, random_state=None, copy_x=True, n_jobs=1,
-            return_n_iter=False,Y):
+            return_n_iter=False):
     """K-Means clustering with minimum and maximum cluster size constraints.
 
     Read more in the :ref:`User Guide <k_means>`.
@@ -172,11 +172,12 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
         # of the best results (as opposed to one set per run per thread).
         for it in range(n_init):
             # run a k-means once
-            labels, inertia, centers, n_iter_ = kmeans_constrained_single(
-                X, n_clusters,
+            labels, inertia, centers, n_iter_ = 
+            (
+                X,W, n_clusters,
                 size_min=size_min, size_max=size_max,
                 max_iter=max_iter, init=init, verbose=verbose, tol=tol,
-                x_squared_norms=x_squared_norms, random_state=random_state,Y)
+                x_squared_norms=x_squared_norms, random_state=random_state)
             # determine if these results are the best so far
             if best_inertia is None or inertia < best_inertia:
                 best_labels = labels.copy()
@@ -187,7 +188,7 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
         # parallelisation of k-means runs
         seeds = random_state.randint(np.iinfo(np.int32).max, size=n_init)
         results = Parallel(n_jobs=n_jobs, verbose=0)(
-            delayed(kmeans_constrained_single)(X, n_clusters,
+            delayed(kmeans_constrained_single)(X,W, n_clusters,
                                    size_min=size_min, size_max=size_max,
                                    max_iter=max_iter, init=init,
                                    verbose=verbose, tol=tol,
@@ -214,10 +215,10 @@ def k_means_constrained(X, n_clusters, size_min=None, size_max=None, init='k-mea
         return best_centers, best_labels, best_inertia
 
 
-def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
+def kmeans_constrained_single(X,W, n_clusters, size_min=None, size_max=None,
                          max_iter=300, init='k-means++',
                          verbose=False, x_squared_norms=None,
-                         random_state=None, tol=1e-4,Y):
+                         random_state=None, tol=1e-4):
     """A single run of k-means constrained, assumes preparation completed prior.
 
     Parameters
@@ -330,7 +331,7 @@ def kmeans_constrained_single(X, n_clusters, size_min=None, size_max=None,
         if sp.issparse(X):
             centers = _centers_sparse(X, labels, n_clusters, distances)
         else:
-            centers = _centers_dense(X, labels, n_clusters, distances,Y)
+            centers = _centers_dense(X,W, labels, n_clusters, distances)
 
         if verbose:
             print("Iteration %2d, inertia %.3f" % (i, inertia))
