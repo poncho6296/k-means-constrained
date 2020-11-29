@@ -9,6 +9,7 @@
 # License: BSD 3 clause
 
 import numpy as np
+cimport sparse as sp
 cimport numpy as np
 cimport cython
 from cython cimport floating
@@ -27,9 +28,16 @@ np.import_array()
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
+
+def permute_matrix(vector):
+    indptr = range(vector.shape[0]+1)
+    ones = np.ones(vector.shape[0])
+    permut = sp.csr_matrix((ones, vector, indptr))
+    return permut.toarray()
+
 def _centers_dense(np.ndarray[floating, ndim=2] X,
         np.ndarray[INT, ndim=1] labels, int n_clusters,
-        np.ndarray[floating, ndim=1] distances):
+        np.ndarray[floating, ndim=1] distances,Y ):
     """M step of the K-means EM algorithm
 
     Computation of cluster centers / means.
@@ -63,7 +71,7 @@ def _centers_dense(np.ndarray[floating, ndim=2] X,
     else:
         centers = np.zeros((n_clusters, n_features), dtype=np.float64)
 
-    n_samples_in_cluster = np.bincount(labels, minlength=n_clusters)
+    n_samples_in_cluster =(permute_matrix(labels)*Y).sum(axis=0)
     empty_clusters = np.where(n_samples_in_cluster == 0)[0]
     # maybe also relocate small clusters?
 
@@ -79,7 +87,7 @@ def _centers_dense(np.ndarray[floating, ndim=2] X,
 
     for i in range(n_samples):
         for j in range(n_features):
-            centers[labels[i], j] += X[i, j]
+            centers[labels[i], j] += X[i, j]*Y[i]
 
     centers /= n_samples_in_cluster[:, np.newaxis]
 
